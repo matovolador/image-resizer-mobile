@@ -1,58 +1,22 @@
 import { useState } from "react";
 import { View, Alert, ActivityIndicator, Text, Image, ImageBackground, ScrollView, Button, Pressable, Modal, StatusBar, StyleSheet} from "react-native";
+import Box from "./components/Box";
 import Greet from "./components/greet";
-import { styles } from "./styles/Styles";
+import Ad from "./components/Ad";
+import { styles, adStyles } from "./styles/Styles";
 const logoImg = require("./assets/adaptive-icon.png");
 
 export default function App() {
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isLoaderVisible, setIsLoaderVisible] = useState(false);
   return (
+    <View style={styles.container}>
   <View style={styles.container}>
-    <View style={[styles.box, styles.lightblueBg, styles.boxShadow]}>
-      <Text>Lightblue box</Text>
-    </View>
-    <View style={[styles.box, styles.lightgreenBg, styles.androidShadow]}>
-      <Text>Lightgreen box</Text>
-    </View>
-    <View style={styles.darkMode}>
-      <Text style={styles.darkModeText}>Style Inheritance <Text style={styles.boldText}>in bold</Text></Text>
-    </View>
-    <Greet name="Bruce Wayne" />
-    <Greet name="Clark Kent" />
-    <Button title="Alert" onPress={() => Alert.alert("Invalid Data","Data was incorrect")}></Button>
-        <ActivityIndicator size="large" color="midnightblue" animating={isLoaderVisible} />
-    <Button title="Alert 2" onPress={() => Alert.alert("Invalid Data","Data was incorrect", [
-      {
-        text: "Cancel",
-        onPress: () => console.log("Cancel pressed")
-      },
-      {
-        text : "OK",
-        onPress: () => console.log("OK Pressed")
-      }
-    ])}></Button>
-    
-        <ActivityIndicator size="large" color="midnightblue" animating={isLoaderVisible} />
-    <StatusBar
-      backgroundColor="lightgreen" barStyle="light-content" hidden
-    />
-    <Button
-      title='Press'
-      onPress={()=> setIsModalVisible(true)}
-      color="midnightblue"
-    />
-    <Modal 
-      visible={isModalVisible}
-      onRequestClose={() => setIsModalVisible(false)}
-      animationType="slide"
-      presentationStyle="pageSheet"
-    >
-      <View style={{ flex:1, backgroundColor: "lightblue", padding: 60}}>
-        <Text>Modal Content</Text>
-        <Button title="Close" color="midnightblule" onPress={() => setIsModalVisible(false)}/>
-      </View>
-    </Modal>
+    <Box style={{ backgroundColor: "black"}}>Box 1</Box>
+    <Box style={{ backgroundColor: "red"}}>Box 2</Box>
+    <Box style={{ backgroundColor: "green"}}>Box 2</Box>
+  </View>
+  <View style={[styles.lastBox]}>
+    <Ad style={{ backgroundColor: "green"}}>Box 2</Ad>
+  </View>
   </View>
   );
 }

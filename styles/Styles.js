@@ -1,9 +1,27 @@
 import { StyleSheet } from "react-native";
+
+export const boxStyles = StyleSheet.create({
+    box: {
+        backgroundColor: "#fff",
+        padding: 20,
+        
+    },
+    text: {
+        fontSize: 24,
+        fontWeight: "bold",
+        textAlign: "center",
+        color: "white"
+    }
+})
+
 export const styles = StyleSheet.create({
     container: {
-      flex: 1,
-      backgroundColor: "plum",
-      padding: 60
+      marginTop: 60,
+      borderWidth: 6,
+      borderColor: "brown",
+      flex:1,
+      flexDirection: "column",
+      justifyContent: "center"
     },
     box: {
         width: 250,
@@ -16,6 +34,9 @@ export const styles = StyleSheet.create({
         borderColor: "purple",
         borderStyle: "solid",
         borderRadius: 5,
+    },
+    lastBox: {
+        justifyContent: "space-between"
     },
     lightblueBg: {
         backgroundColor: "lightblue",
