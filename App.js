@@ -1,13 +1,14 @@
 import { useState } from "react";
-import { View, Alert, ActivityIndicator, Text, Image, ImageBackground, ScrollView, Button, Pressable, Modal, StatusBar} from "react-native";
+import { View, Alert, ActivityIndicator, Text, Image, ImageBackground, ScrollView, Button, Pressable, Modal, StatusBar, StyleSheet} from "react-native";
 import Greet from "./components/greet";
+import { styles } from "./styles/Styles";
 const logoImg = require("./assets/adaptive-icon.png");
 
 export default function App() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isLoaderVisible, setIsLoaderVisible] = useState(false);
   return (
-  <View style={{ flex:1, backgroundColor: "plum", padding: 60}}>
+  <View style={styles.container}>
     <Greet name="Bruce Wayne" />
     <Greet name="Clark Kent" />
     <Button title="Alert" onPress={() => Alert.alert("Invalid Data","Data was incorrect")}></Button>
@@ -46,3 +47,4 @@ export default function App() {
   </View>
   );
 }
+
