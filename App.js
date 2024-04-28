@@ -9,6 +9,15 @@ export default function App() {
   const [isLoaderVisible, setIsLoaderVisible] = useState(false);
   return (
   <View style={styles.container}>
+    <View style={[styles.box, styles.lightblueBg, styles.boxShadow]}>
+      <Text>Lightblue box</Text>
+    </View>
+    <View style={[styles.box, styles.lightgreenBg, styles.androidShadow]}>
+      <Text>Lightgreen box</Text>
+    </View>
+    <View style={styles.darkMode}>
+      <Text style={styles.darkModeText}>Style Inheritance <Text style={styles.boldText}>in bold</Text></Text>
+    </View>
     <Greet name="Bruce Wayne" />
     <Greet name="Clark Kent" />
     <Button title="Alert" onPress={() => Alert.alert("Invalid Data","Data was incorrect")}></Button>
