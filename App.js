@@ -8,7 +8,7 @@ const logoImg = require("./assets/adaptive-icon.png");
 
 export default function App() {
   return (
-    <View style={styles.container}>
+    <View style={styles.mainContainer}>
   <View style={styles.container}>
     <Box style={{ backgroundColor: "black"}}>Box 1</Box>
     <Box style={{ backgroundColor: "red"}}>Box 2</Box>

@@ -15,8 +15,14 @@ export const boxStyles = StyleSheet.create({
 })
 
 export const styles = StyleSheet.create({
+    mainContainer: {
+        marginTop: 30,
+        borderWidth: 6,
+        borderColor: "brown",
+        flex:1,
+        flexDirection: "column",
+      },
     container: {
-      marginTop: 60,
       borderWidth: 6,
       borderColor: "brown",
       flex:1,
