@@ -10,6 +10,8 @@ export default function ImagePickerExample() {
   const [newWidth, setNewWidth] = useState('');
   const [newHeight, setNewHeight] = useState('');
   const [maintainAspectRatio, setMaintainAspectRatio] = useState(true);
+  const [originalWidth, setOriginalWidth] = useState(''); // Get the original width of the image
+  const [originalHeight, setOriginalHeight] = useState('') // Get the original height of the image
 
   useEffect(() => {
     // Request permission for accessing media library
@@ -37,11 +39,11 @@ export default function ImagePickerExample() {
 
     if (!result.canceled && result.assets[0]?.uri) {
       setImage({ uri: result.assets[0].uri });
-      getImageSize(result.assets[0].uri);
+      getImageSize(result.assets[0].uri, asignOriginalValues=true);
     }
   };
 
-  const getImageSize = async (uri) => {
+  const getImageSize = async (uri, asignOriginalValues=false) => {
     const {width, height} = await new Promise((resolve) => {
       Image.getSize(uri, (width, height) => {
         resolve({width: width, height: height});
@@ -54,6 +56,8 @@ export default function ImagePickerExample() {
     if (width !== undefined && height !== undefined) {
       setNewWidth(width.toString());
       setNewHeight(height.toString());
+      setOriginalHeight(height);
+      setOriginalWidth(width);
     } else {
       console.warn('Image width or height is undefined');
     }
@@ -108,8 +112,13 @@ export default function ImagePickerExample() {
             value={maintainAspectRatio}
             onValueChange={(value) => {
               setMaintainAspectRatio(value);
-              if (value) {
-                setNewHeight((parseInt(newWidth) * 3 / 4).toString());
+              if (!value) { // If aspect ratio is disabled
+                setNewHeight('');
+              } else { // If aspect ratio is enabled
+                if (originalWidth && originalHeight) {
+                  const newHeight = Math.round((parseInt(newWidth) * originalHeight) / originalWidth);
+                  setNewHeight(newHeight.toString());
+                }
               }
             }}
           />
