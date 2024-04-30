@@ -82,6 +82,8 @@ export default function ImagePickerExample() {
       await FileSystem.copyAsync({ from: manipResult.uri, to: fileUri });
 
       await MediaLibrary.saveToLibraryAsync(fileUri);
+      setImage({ uri: fileUri }); // Update the image state with the resized image URI
+      getImageSize(fileUri, true); // Update image dimensions
       setResized(true);
     } catch (error) {
       console.error('Error resizing image:', error);
@@ -95,18 +97,23 @@ export default function ImagePickerExample() {
     const maxWidth = screenWidth * 0.8;
     const maxHeight = screenHeight * 0.4;
     let imageWidth, imageHeight;
-
+  
     if (originalWidth && originalHeight) {
       // Calculate image dimensions while maintaining aspect ratio
-      if (originalWidth / maxWidth > originalHeight / maxHeight) {
-        imageWidth = maxWidth;
-        imageHeight = (originalHeight * maxWidth) / originalWidth;
+      const widthRatio = originalWidth / maxWidth;
+      const heightRatio = originalHeight / maxHeight;
+      const maxRatio = Math.max(widthRatio, heightRatio);
+  
+      if (maxRatio <= 1) {
+        // Original image fits within maxWidth and maxHeight, no resizing needed
+        imageWidth = originalWidth;
+        imageHeight = originalHeight;
       } else {
-        imageHeight = maxHeight;
-        imageWidth = (originalWidth * maxHeight) / originalHeight;
+        imageWidth = originalWidth / maxRatio;
+        imageHeight = originalHeight / maxRatio;
       }
     }
-
+  
     return { width: imageWidth, height: imageHeight };
   };
 
