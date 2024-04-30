@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Button, Image, View, StyleSheet, Alert, TextInput, Text, Switch } from 'react-native';
+import { Button, Image, View, StyleSheet, Alert, TextInput, Text, Switch, Dimensions  } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system';
@@ -10,8 +10,9 @@ export default function ImagePickerExample() {
   const [newWidth, setNewWidth] = useState('');
   const [newHeight, setNewHeight] = useState('');
   const [maintainAspectRatio, setMaintainAspectRatio] = useState(true);
-  const [originalWidth, setOriginalWidth] = useState(''); // Get the original width of the image
-  const [originalHeight, setOriginalHeight] = useState('') // Get the original height of the image
+  const [resized, setResized] = useState(false);
+  const [originalWidth, setOriginalWidth] = useState('');
+  const [originalHeight, setOriginalHeight] = useState('');
 
   useEffect(() => {
     // Request permission for accessing media library
@@ -39,25 +40,28 @@ export default function ImagePickerExample() {
 
     if (!result.canceled && result.assets[0]?.uri) {
       setImage({ uri: result.assets[0].uri });
-      getImageSize(result.assets[0].uri, asignOriginalValues=true);
+      getImageSize(result.assets[0].uri, assignOrignalValues=true);
+      setResized(false); // Reset resized state when a new image is picked
     }
   };
 
-  const getImageSize = async (uri, asignOriginalValues=false) => {
-    const {width, height} = await new Promise((resolve) => {
+  const getImageSize = async (uri, asignOriginalValues = false) => {
+    const { width, height } = await new Promise((resolve) => {
       Image.getSize(uri, (width, height) => {
-        resolve({width: width, height: height});
+        resolve({ width: width, height: height });
       });
     });
-    
+
     console.log('Width:', width, 'Height:', height);
 
     // Check if width and height are valid
     if (width !== undefined && height !== undefined) {
       setNewWidth(width.toString());
       setNewHeight(height.toString());
-      setOriginalHeight(height);
-      setOriginalWidth(width);
+      if (asignOriginalValues) {
+        setOriginalHeight(height);
+        setOriginalWidth(width);
+      }
     } else {
       console.warn('Image width or height is undefined');
     }
@@ -78,53 +82,79 @@ export default function ImagePickerExample() {
       await FileSystem.copyAsync({ from: manipResult.uri, to: fileUri });
 
       await MediaLibrary.saveToLibraryAsync(fileUri);
+      setResized(true);
     } catch (error) {
       console.error('Error resizing image:', error);
     }
   };
 
+  const screenWidth = Dimensions.get('window').width;
+  const screenHeight = Dimensions.get('window').height;
+
+  const getImageDimensions = () => {
+    const maxWidth = screenWidth * 0.8;
+    const maxHeight = screenHeight * 0.4;
+    let imageWidth, imageHeight;
+
+    if (originalWidth && originalHeight) {
+      // Calculate image dimensions while maintaining aspect ratio
+      if (originalWidth / maxWidth > originalHeight / maxHeight) {
+        imageWidth = maxWidth;
+        imageHeight = (originalHeight * maxWidth) / originalWidth;
+      } else {
+        imageHeight = maxHeight;
+        imageWidth = (originalWidth * maxHeight) / originalHeight;
+      }
+    }
+
+    return { width: imageWidth, height: imageHeight };
+  };
+
   return (
     <View style={styles.container}>
-      <Button title="Pick an image from camera roll" onPress={pickImage} />
-      {image && <Image source={{ uri: image.uri }} style={styles.image} />}
-      <View style={styles.inputContainer}>
-        <View style={styles.rowContainer}>
-          <TextInput
-            value={newWidth}
-            onChangeText={(text) => setNewWidth(text)}
-            keyboardType="numeric"
-            placeholder="Width"
-            style={styles.input}
-          />
-          <Text style={styles.crossText}>x</Text>
-          <TextInput
-            value={newHeight}
-            onChangeText={(text) => setNewHeight(text)}
-            keyboardType="numeric"
-            placeholder="Height"
-            style={styles.input}
-            editable={!maintainAspectRatio}
-          />
-        </View>
-        <View style={styles.checkBoxContainer}>
-          <Text>Maintain Aspect Ratio</Text>
-          <Switch
-            value={maintainAspectRatio}
-            onValueChange={(value) => {
-              setMaintainAspectRatio(value);
-              if (!value) { // If aspect ratio is disabled
-                setNewHeight('');
-              } else { // If aspect ratio is enabled
-                if (originalWidth && originalHeight) {
-                  const newHeight = Math.round((parseInt(newWidth) * originalHeight) / originalWidth);
-                  setNewHeight(newHeight.toString());
+      <Button title="Select Image" onPress={pickImage} style={styles.button} />
+      {image && <Image source={{ uri: image.uri }} style={[styles.image, getImageDimensions()]} />}
+      {!resized && ( // Show inputs, switch, and resize button if not resized
+        <View style={styles.inputContainer}>
+          <View style={styles.rowContainer}>
+            <TextInput
+              value={newWidth}
+              onChangeText={(text) => setNewWidth(text)}
+              keyboardType="numeric"
+              placeholder="Width"
+              style={styles.input}
+            />
+            <Text style={styles.crossText}>x</Text>
+            <TextInput
+              value={newHeight}
+              onChangeText={(text) => setNewHeight(text)}
+              keyboardType="numeric"
+              placeholder="Height"
+              style={styles.input}
+              editable={!maintainAspectRatio}
+            />
+          </View>
+          <View style={styles.checkBoxContainer}>
+            <Text>Maintain Aspect Ratio</Text>
+            <Switch
+              value={maintainAspectRatio}
+              onValueChange={(value) => {
+                setMaintainAspectRatio(value);
+                if (!value) {
+                  setNewHeight('');
+                } else {
+                  if (originalWidth && originalHeight) {
+                    const newHeight = Math.round((parseInt(newWidth) * originalHeight) / originalWidth);
+                    setNewHeight(newHeight.toString());
+                  }
                 }
-              }
-            }}
-          />
+              }}
+            />
+          </View>
+          <Button title="Resize" onPress={resizeImage} />
         </View>
-      </View>
-      <Button title="Resize" onPress={resizeImage} />
+      )}
+      {resized && <Text>Image Resized!</Text>}
     </View>
   );
 }
@@ -135,10 +165,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  button:{
+    width: 200,
+    height:50,
+    margin:20
+  },
   image: {
     width: 200,
-    height: 200,
-    marginBottom: 10,
+    margin: 20,
   },
   inputContainer: {
     width: '100%',
