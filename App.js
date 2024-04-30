@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Button, Image, View, StyleSheet, Alert } from 'react-native';
+import { Button, Image, View, StyleSheet, Alert, TextInput, Text, Switch } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system';
@@ -7,17 +7,14 @@ import * as MediaLibrary from 'expo-media-library';
 
 export default function ImagePickerExample() {
   const [image, setImage] = useState(null);
+  const [newWidth, setNewWidth] = useState('');
+  const [newHeight, setNewHeight] = useState('');
+  const [maintainAspectRatio, setMaintainAspectRatio] = useState(true);
 
   useEffect(() => {
-    // Create app directory on component mount
-    createAppDirectory();
     // Request permission for accessing media library
     requestMediaLibraryPermission();
-    // Request permission for accessing media files from external storage
-    requestExternalStoragePermission();
   }, []);
-
-  const appFolderName = "BaruImageResizer";
 
   const requestMediaLibraryPermission = async () => {
     const { status } = await MediaLibrary.requestPermissionsAsync();
@@ -26,23 +23,6 @@ export default function ImagePickerExample() {
         'Permission Required',
         'This app needs access to your media library to save images.'
       );
-    }
-  };
-
-  const requestExternalStoragePermission = async () => {
-    const { status } = await MediaLibrary.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      console.log('Permission not granted to access media files from external storage');
-    }
-  };
-
-  const createAppDirectory = async () => {
-    try {
-      const directory = `${FileSystem.documentDirectory}${appFolderName}/`;
-      await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
-      console.log('Custom directory created:', directory);
-    } catch (error) {
-      console.error('Error creating custom directory:', error);
     }
   };
 
@@ -55,49 +35,87 @@ export default function ImagePickerExample() {
       quality: 1,
     });
 
-    console.log(result);
-
-    if (!result.cancelled && result.assets[0]?.uri) {
+    if (!result.canceled && result.assets[0]?.uri) {
       setImage({ uri: result.assets[0].uri });
-      console.log(image);
-    } else {
-      console.log("Canceled");
+      getImageSize(result.assets[0].uri);
     }
   };
 
-  const resizeImage = async (width, height) => {
+  const getImageSize = async (uri) => {
+    const {width, height} = await new Promise((resolve) => {
+      Image.getSize(uri, (width, height) => {
+        resolve({width: width, height: height});
+      });
+    });
+    
+    console.log('Width:', width, 'Height:', height);
+
+    // Check if width and height are valid
+    if (width !== undefined && height !== undefined) {
+      setNewWidth(width.toString());
+      setNewHeight(height.toString());
+    } else {
+      console.warn('Image width or height is undefined');
+    }
+  };
+
+  const resizeImage = async () => {
     try {
       const manipResult = await manipulateAsync(
         image.uri,
-        [{ resize: { height: height, width: width } }],
+        [{ resize: { width: parseInt(newWidth), height: parseInt(newHeight) } }],
         { compress: 1, format: SaveFormat.PNG }
       );
 
-      const fileUri = `${FileSystem.documentDirectory}${appFolderName}/${getNewFileName(image.uri, width, height)}`;
+      const directory = `${FileSystem.documentDirectory}resized_images/`;
+      await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+
+      const fileUri = `${directory}resized_image.png`;
       await FileSystem.copyAsync({ from: manipResult.uri, to: fileUri });
 
-      // Save the image to media library
       await MediaLibrary.saveToLibraryAsync(fileUri);
-
-      // Display the resized image if needed
-      setImage({ uri: fileUri });
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      console.error('Error resizing image:', error);
     }
-  };
-
-  const getNewFileName = (uri, width, height) => {
-    // Extract the file name from the URI
-    const fileName = uri.substring(uri.lastIndexOf('/') + 1);
-    // Construct the new file name with dimensions
-    return `${fileName}_${width}x${height}.png`;
   };
 
   return (
     <View style={styles.container}>
       <Button title="Pick an image from camera roll" onPress={pickImage} />
       {image && <Image source={{ uri: image.uri }} style={styles.image} />}
-      <Button title="Resize 500x500" onPress={() => resizeImage(500, 500)} />
+      <View style={styles.inputContainer}>
+        <View style={styles.rowContainer}>
+          <TextInput
+            value={newWidth}
+            onChangeText={(text) => setNewWidth(text)}
+            keyboardType="numeric"
+            placeholder="Width"
+            style={styles.input}
+          />
+          <Text style={styles.crossText}>x</Text>
+          <TextInput
+            value={newHeight}
+            onChangeText={(text) => setNewHeight(text)}
+            keyboardType="numeric"
+            placeholder="Height"
+            style={styles.input}
+            editable={!maintainAspectRatio}
+          />
+        </View>
+        <View style={styles.checkBoxContainer}>
+          <Text>Maintain Aspect Ratio</Text>
+          <Switch
+            value={maintainAspectRatio}
+            onValueChange={(value) => {
+              setMaintainAspectRatio(value);
+              if (value) {
+                setNewHeight((parseInt(newWidth) * 3 / 4).toString());
+              }
+            }}
+          />
+        </View>
+      </View>
+      <Button title="Resize" onPress={resizeImage} />
     </View>
   );
 }
@@ -111,5 +129,30 @@ const styles = StyleSheet.create({
   image: {
     width: 200,
     height: 200,
+    marginBottom: 10,
+  },
+  inputContainer: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  rowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  input: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: 'gray',
+    paddingHorizontal: 10,
+    marginRight: 5,
+  },
+  crossText: {
+    fontSize: 20,
+    marginHorizontal: 5,
+  },
+  checkBoxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
