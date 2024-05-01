@@ -11,3 +11,9 @@ npm run start
 ```bash
 npx eas build -p android
 ```
+
+## Submit to store
+
+```bash
+npx eas submit --platform android
+```
