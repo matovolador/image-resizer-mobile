@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Button, Image, View, StyleSheet, Alert, TextInput, Text, Switch, Dimensions  } from 'react-native';
+import { Button, Image, View, StyleSheet, Alert, TextInput, Text, Switch, Dimensions, TouchableOpacity  } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system';
@@ -119,7 +119,9 @@ export default function ImagePickerExample() {
 
   return (
     <View style={styles.container}>
-      <Button title="Select Image" onPress={pickImage} style={styles.button} />
+      <TouchableOpacity onPress={pickImage} style={styles.button}>
+        <Text style={styles.buttonText}>SELECT IMAGE</Text>
+      </TouchableOpacity>
       {image && <Image source={{ uri: image.uri }} style={[styles.image, getImageDimensions()]} />}
       {!resized && ( // Show inputs, switch, and resize button if not resized
         <View style={styles.inputContainer}>
@@ -156,9 +158,13 @@ export default function ImagePickerExample() {
                   }
                 }
               }}
+              thumbColor="#4a148c" // Change the color of the switch's thumb
+              trackColor={{ false: "#e7e0ec", true: "#4a148c" }} // Change the color of the switch's track
             />
           </View>
-          <Button title="Resize" onPress={resizeImage} />
+          <TouchableOpacity onPress={resizeImage} style={styles.button}>
+            <Text style={styles.buttonText}>RESIZE IMAGE</Text>
+          </TouchableOpacity>
         </View>
       )}
       {resized && <Text>Image Resized!</Text>}
@@ -174,8 +180,20 @@ const styles = StyleSheet.create({
   },
   button:{
     width: 200,
-    height:50,
-    margin:20
+    height:40,
+    margin:20,
+    backgroundColor: "#4a148c",
+    color: "white",
+    borderRadius: 5,
+    alignItems: 'center', // Center the text vertically
+    justifyContent: "center",
+  },
+  buttonText: {
+    textAlign: 'center',
+    color: 'white',
+    fontWeight: 'bold',
+    justifyContent: 'center',
+    alignItems: 'center', // Center the text vertically
   },
   image: {
     width: 200,
@@ -191,11 +209,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   input: {
-    flex: 1,
     borderWidth: 1,
     borderColor: 'gray',
     paddingHorizontal: 10,
-    marginRight: 5,
+    margin: 5,
+    width:100,
   },
   crossText: {
     fontSize: 20,
