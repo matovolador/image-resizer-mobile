@@ -4,6 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
+import HeaderBar from './components/HeaderBar'; // Import the HeaderBar component
 
 export default function ImagePickerExample() {
   const [image, setImage] = useState(null);
@@ -17,6 +18,7 @@ export default function ImagePickerExample() {
   useEffect(() => {
     // Request permission for accessing media library
     requestMediaLibraryPermission();
+    console.log(image);
   }, []);
 
   const requestMediaLibraryPermission = async () => {
@@ -81,10 +83,20 @@ export default function ImagePickerExample() {
       const fileUri = `${directory}resized_image.png`;
       await FileSystem.copyAsync({ from: manipResult.uri, to: fileUri });
 
-      await MediaLibrary.saveToLibraryAsync(fileUri);
-      setImage({ uri: fileUri }); // Update the image state with the resized image URI
-      getImageSize(fileUri, true); // Update image dimensions
-      setResized(true);
+
+      // Request device storage access permission
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status === "granted") {
+        await MediaLibrary.saveToLibraryAsync(fileUri);
+        setImage({ uri: fileUri }); // Update the image state with the resized image URI
+        getImageSize(fileUri, true); // Update image dimensions
+        setResized(true);
+      }else{
+        Alert.alert(
+          'Permission Required',
+          'This app needs access to your media library to save images.'
+        );
+      }
     } catch (error) {
       console.error('Error resizing image:', error);
     }
@@ -117,18 +129,28 @@ export default function ImagePickerExample() {
     return { width: imageWidth, height: imageHeight };
   };
 
+  const onNewWidthChange = (text) => {
+    setNewWidth(text);
+    if (maintainAspectRatio && originalWidth && originalHeight) {
+      const newHeight = Math.round((parseInt(text) * originalHeight) / originalWidth);
+      setNewHeight(newHeight.toString());
+    }
+  };
+
   return (
     <View style={styles.container}>
+      <HeaderBar />
       <TouchableOpacity onPress={pickImage} style={styles.button}>
         <Text style={styles.buttonText}>SELECT IMAGE</Text>
       </TouchableOpacity>
-      {image && <Image source={{ uri: image.uri }} style={[styles.image, getImageDimensions()]} />}
+      {!image && <Image source={require('./assets/placeholder_img.png')} style={[styles.image, {width: 200, height:200}]} /> }
+      {image && <Image source={image} style={[styles.image, getImageDimensions()]} />}
       {!resized && ( // Show inputs, switch, and resize button if not resized
         <View style={styles.inputContainer}>
           <View style={styles.rowContainer}>
             <TextInput
               value={newWidth}
-              onChangeText={(text) => setNewWidth(text)}
+              onChangeText={onNewWidthChange}
               keyboardType="numeric"
               placeholder="Width"
               style={styles.input}
@@ -150,7 +172,7 @@ export default function ImagePickerExample() {
               onValueChange={(value) => {
                 setMaintainAspectRatio(value);
                 if (!value) {
-                  setNewHeight('');
+                  //setNewHeight('');
                 } else {
                   if (originalWidth && originalHeight) {
                     const newHeight = Math.round((parseInt(newWidth) * originalHeight) / originalWidth);
@@ -175,8 +197,10 @@ export default function ImagePickerExample() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: 0, // Remove any padding at the top
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start', // Align content at the top
+    paddingTop: 30
   },
   button:{
     width: 200,
