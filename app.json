@@ -45,8 +45,7 @@
       "permissions": [
         "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.ACCESS_MEDIA_LOCATION",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.ACCESS_MEDIA_LOCATION"
       ],
       "package": "com.matovolador.imageresizer",
       "versionCode": 2 
