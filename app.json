@@ -52,7 +52,7 @@
         "android.permission.CAMERA"
       ],
       "package": "com.bossnode.imageresizer",
-      "versionCode": 2 
+      "versionCode": 3
     },
     "web": {
       "favicon": "./assets/favicon.png"
