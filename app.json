@@ -48,7 +48,8 @@
         "android.permission.ACCESS_MEDIA_LOCATION",
         "android.permission.RECORD_AUDIO"
       ],
-      "package": "com.matovolador.imageresizer"
+      "package": "com.matovolador.imageresizer",
+      "versionCode": 2 
     },
     "web": {
       "favicon": "./assets/favicon.png"
