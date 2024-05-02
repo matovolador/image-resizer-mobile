@@ -143,6 +143,7 @@ export default function ImagePickerExample() {
       <TouchableOpacity onPress={pickImage} style={styles.button}>
         <Text style={styles.buttonText}>SELECT IMAGE</Text>
       </TouchableOpacity>
+      <Text style={styles.appTitle }>IMAGE RESIZER</Text>
       {!image && <Image source={require('./assets/placeholder_img.png')} style={[styles.image, {width: 200, height:200}]} /> }
       {image && <Image source={image} style={[styles.image, getImageDimensions()]} />}
       {!resized && ( // Show inputs, switch, and resize button if not resized
@@ -201,6 +202,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start', // Align content at the top
     paddingTop: 30
+  },
+  appTitle:{
+    color: "black",
+    fontWeight:"bold",
+    fontSize: 20,
   },
   button:{
     width: 200,
