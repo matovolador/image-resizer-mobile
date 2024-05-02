@@ -47,7 +47,7 @@
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.ACCESS_MEDIA_LOCATION"
       ],
-      "package": "com.matovolador.imageresizer",
+      "package": "com.bossnode.imageresizer",
       "versionCode": 2 
     },
     "web": {
